@@ -1,0 +1,47 @@
+.header {
+  display: flex;
+  align-items: center;
+  background-color: #1B1B1B;
+  padding: 16px 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  user-select: none;
+}
+
+
+.title {
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0 8px;
+  align-content: center;
+}
+
+.nav {
+  display: flex;
+  gap: 16px;
+}
+
+.button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.button:hover {
+  color: #f1c40f;
+}
+
+.button:active {
+  color: #E89C0C;
+  transition: color 0.1s;
+}
+
+.separator {
+  width: 1px;
+  height: 24px;
+  background-color: #555;
+  margin: 0 16px;
+}

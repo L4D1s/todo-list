@@ -1,0 +1,21 @@
+.footer {
+  background-color: #1B1B1B;
+  color: #B0B0B0;
+  text-align: center;
+  padding: 16px;
+  user-select: none;
+}
+
+.footer span {
+  cursor: pointer;
+  transition: color 0.3s ease-in-out;
+}
+
+.footer span:hover {
+  color: #f1c40f;
+}
+
+.footer span:active {
+  color: #E89C0C;
+  transition: color 0.1s;
+}
