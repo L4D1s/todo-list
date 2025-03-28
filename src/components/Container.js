@@ -6,6 +6,7 @@ const containerStyle = {
   boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
   borderRadius: '8px',
   marginTop: '20px',
+  marginBottom: '20px',
 }
 
 const Container = ({ children }) => {
