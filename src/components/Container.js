@@ -7,6 +7,7 @@ const containerStyle = {
   borderRadius: '8px',
   marginTop: '20px',
   marginBottom: '20px',
+  userSelect: 'none',
 }
 
 const Container = ({ children }) => {

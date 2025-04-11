@@ -1,0 +1,60 @@
+.controlsContainer {
+  user-select: none;
+
+}
+
+.controlsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.controlsTitle {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.toggleIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.controlsBody {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.controlSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.select {
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.tagsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.checkbox {
+  cursor: pointer;
+}

@@ -1,164 +1,104 @@
-import React, { useState } from "react";
-import taskStyles from './TaskList.module.css';
+import { useState } from "react";
 import Container from "../Container";
-import TagFilter from "../TagFilter/TagFilter";
+import TaskControls from "./TaskControls";
+import TaskTable from "./TaskTable";
+import TaskBadgeLegend from "./TaskBadgeLegend";
+import useFilterSort from "../../hooks/useFilterSort";
+import { tagFilter, statusFilter } from "../../utils/filters";
+import {
+  sortByCreatedDateAsc,
+  sortByDeadlineAsc,
+  sortByParticipantsCount
+} from "../../utils/sorters";
+import TaskModal from "./TaskModal";
+import { useTasks } from '../../context/TaskContext'
+import taskStyles from './Task.module.css'
 
-const Task = ({ task, isExpanded, toggleDetails }) => {
-  const currentDate = new Date();
-  const timeDiff = task.deadline - currentDate;
-  const diffDays = timeDiff / (1000 * 3600 * 24);
 
-  let rowStyle = {
-    backgroundColor: '#d4edda'
+const TaskList = () => {
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [status, setStatus] = useState('active');
+  const [sortOption, setSortOption] = useState('');
+  const [expandedTasks, setExpandedTasks] = useState([]);
+  const { tasks, addTask} = useTasks();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const allTags = [...new Set(tasks.flatMap(task => task.tags))];
+
+  const toggleTag = (tag) => {
+    setSelectedTags(prev =>
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
   };
 
-  if (diffDays < 0) {
-    rowStyle = {
-      backgroundColor: '#f8d7da',
-    };
-  } else if (diffDays < 3) {
-    rowStyle = {
-      backgroundColor: '#fff3cd'
-    };
-  }
+  const sortMap = {
+    deadline: sortByDeadlineAsc,
+    createdAt: sortByCreatedDateAsc,
+    participants: sortByParticipantsCount,
+  };
+
+  const filteredSortedTasks = useFilterSort({
+    data: tasks,
+    filters: [statusFilter(status), tagFilter(selectedTags)],
+    sortFn: sortMap[sortOption] || null,
+  });
+
+  const toggleDetails = (id) => {
+    setExpandedTasks(prev =>
+      prev.includes(id) ? prev.filter(tid => tid !== id) : [...prev, id]
+    );
+  };
+
+  const getTableTitle = () => {
+    switch (status) {
+      case "active":
+        return "Активные задачи";
+      case "completed":
+        return "Завершенные задачи";
+      default:
+        return "Все задачи";
+    }
+  };
 
   return (
-    <>
-      <tr onClick={() => toggleDetails(task.id)} style={{ cursor: "pointer" }}>
-        <td>{task.description}</td>
-        <td>{task.createdAt.toLocaleString()}</td>
-        <td style={rowStyle}>{task.deadline.toLocaleString()}</td>
-        <td>{task.participants.join(", ")}</td>
-        <td>{task.tags.join(", ")}</td>
-        <td>{task.isCompleted ? "Завершено" : "Не завершено"}</td>
-      </tr>
-      {isExpanded && (
-        <tr>
-          <td colSpan="6" style={{ backgroundColor: "#f9f9f9", padding: "10px" }}>
-            <strong>Доп. информация:</strong> {task.extraData || "Нет дополнительной информации"}
-          </td>
-        </tr>
-      )}
-    </>
-  );
-};
+    <div>
+      <Container>
+        <TaskControls
+          allTags={allTags}
+          selectedTags={selectedTags}
+          onTagToggle={toggleTag}
+          status={status}
+          onStatusChange={setStatus}
+          sortOption={sortOption}
+          onSortChange={setSortOption}
+        />
+      </Container>
 
-const TaskList = ({ tasks }) => {
-    const [expandedTasks, setExpandedTasks] = useState([]);
-    const [selectedTags, setSelectedTags] = useState("");
-    const [isFilterExpanded, setIsFilterExpanded] = useState(false);
+      <Container>
+        <TaskTable
+            tasks={filteredSortedTasks}
+            expandedTasks={expandedTasks}
+            toggleDetails={toggleDetails}
+            tableTitle={getTableTitle()}
+        />
+        <div style={{display: 'flex', justifyContent: 'center'}}>
+          <button onClick={() => setIsModalOpen(true)} className={taskStyles.createButton}>Создать новую задачу</button>
+        </div>
+      </Container>
 
-    const filteredTasks = selectedTags.length > 0
-        ? tasks.filter(task => selectedTags.every(tag => task.tags.includes(tag)))
-        : tasks;
-
-    const getAllTags = () => {
-        const allTags = tasks.reduce((acc, task) => {
-          task.tags.forEach(tag => {
-            if (!acc.includes(tag)) acc.push(tag);
-          });
-          return acc;
-        }, []);
-        return allTags;
-      };
-
-    const handleTagSelect = (selectedTag) => {
-        setSelectedTags((prevSelectedTags) => {
-          if (prevSelectedTags.includes(selectedTag)) {
-            return prevSelectedTags.filter(tag => tag !== selectedTag);
-          } else {
-            return [...prevSelectedTags, selectedTag];
-          }
-        });
-      };
-
-    const sortedTasks = filteredTasks
-        .filter(task => !task.isCompleted)
-        .sort((a, b) => a.deadline - b.deadline);
-
-    const allTags = getAllTags()
-
-    const toggleDetails = (id) => {
-        setExpandedTasks((prev) =>
-          prev.includes(id) ? prev.filter((taskId) => taskId !== id) : [...prev, id]
-        );
-      };
-
-    const toggleExpandFilter = () => {
-        setIsFilterExpanded(prev => !prev);
-    };
-
-    return (
-        <div>
-            <Container>
-                <TagFilter
-                  tags={allTags}
-                  selectedTags={selectedTags}
-                  onTagSelect={handleTagSelect}
-                  isExpanded={isFilterExpanded}
-                  toggleExpand={toggleExpandFilter}
-                />
-            </Container>
-          <Container>
-            <h3 className={taskStyles.taskH3}>Активные задачи</h3>
-            <table className={taskStyles.taskTable}>
-              <thead>
-                <tr>
-                  <th>Описание</th>
-                  <th>Дата создания</th>
-                  <th>Дата завершения</th>
-                  <th>Участники</th>
-                  <th>Теги</th>
-                  <th>Статус</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedTasks.length === 0 ? (
-                  <tr>
-                    <td colSpan="6">Нет активных задач</td>
-                  </tr>
-                ) : (
-                  sortedTasks.map(task => (
-                    <Task key={task.id}
-                          task={task}
-                          isExpanded={expandedTasks.includes(task.id)}
-                          toggleDetails={toggleDetails}
-                    />
-                  ))
-                )}
-              </tbody>
-            </table>
-          </Container>
-          <div style={{marginTop: '50px'}}>
-          <Container>
-              <div>
-                  <h3 className={taskStyles.taskH3}>Цветовая маркировка задач</h3>
-                  <div style={{display: 'flex', justifyContent: 'center', marginTop: '30px'}}>
-                      <span className={taskStyles.taskBadge} style={{
-                          backgroundColor: '#d4edda', borderColor: '#bcd0c7', marginRight: '50px'
-                      }}>Срок до завершения более 3 дней</span>
-
-                      <span className={taskStyles.taskBadge}
-                            style={{
-                                backgroundColor: '#fff3cd',
-                                borderColor: '#e6dbb9',
-                                marginRight: '50px'
-                      }}>
-                          Срок до завершения менее 3 дней
-                      </span>
-
-                      <span className={taskStyles.taskBadge} style={{
-                          backgroundColor: '#f8d7da', borderColor: '#dfc2c4', marginRight: '50px'
-                      }}>Истек срок завершения задачи</span>
-                      <span
-                          className={taskStyles.taskBadge} style={{
-                              backgroundColor: '#e2e3e5', borderColor: '#d6d8d9'
-                          }}>Задача закрыта</span>
-                  </div>
-              </div>
-          </Container>
-          </div>
+      <div style={{marginTop: "50px"}}>
+        <Container>
+          <TaskBadgeLegend/>
+        </Container>
       </div>
+
+      {isModalOpen && (
+        <TaskModal
+          onClose={() => setIsModalOpen(false)}
+          onSave={addTask}
+        />
+      )}
+    </div>
   );
 };
 
