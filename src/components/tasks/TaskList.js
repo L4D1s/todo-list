@@ -4,24 +4,24 @@ import TaskControls from "./TaskControls";
 import TaskTable from "./TaskTable";
 import TaskBadgeLegend from "./TaskBadgeLegend";
 import useFilterSort from "../../hooks/useFilterSort";
-import { tagFilter, statusFilter } from "../../utils/filters";
+import { tagFilter, statusFilter, overdueFilter, urgentFilter } from "../../utils/filters";
 import {
   sortByCreatedDateAsc,
   sortByDeadlineAsc,
   sortByParticipantsCount
 } from "../../utils/sorters";
-import TaskModal from "./TaskModal";
-import { useTasks } from '../../context/TaskContext'
-import taskStyles from './Task.module.css'
+import { useTasks } from '../../context/TaskContext';
+import taskStyles from './Task.module.css';
+import { useLocation, useNavigate, useLoaderData } from 'react-router-dom';
 
-
-const TaskList = () => {
+const TaskList = ({ filter }) => {
   const [selectedTags, setSelectedTags] = useState([]);
-  const [status, setStatus] = useState('active');
   const [sortOption, setSortOption] = useState('');
   const [expandedTasks, setExpandedTasks] = useState([]);
-  const { tasks, addTask} = useTasks();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { searchQuery, filteredTasks } = useLoaderData();
+  const { tasks } = useTasks();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const allTags = [...new Set(tasks.flatMap(task => task.tags))];
 
@@ -37,9 +37,30 @@ const TaskList = () => {
     participants: sortByParticipantsCount,
   };
 
+  const handleSearch = (e) => {
+    const query = e.target.value;
+    navigate(`?search=${query}`);
+  };
+
+  const getFilters = () => {
+    const filters = [tagFilter(selectedTags)];
+    
+    if (filter === 'overdue') {
+      filters.push(overdueFilter);
+    } else if (filter === 'urgent') {
+      filters.push(urgentFilter);
+    } else if (filter === 'active') {
+      filters.push(statusFilter('active'));
+    } else if (filter === 'completed') {
+      filters.push(statusFilter('completed'));
+    }
+
+    return filters;
+  };
+
   const filteredSortedTasks = useFilterSort({
-    data: tasks,
-    filters: [statusFilter(status), tagFilter(selectedTags)],
+    data: filteredTasks,
+    filters: getFilters(),
     sortFn: sortMap[sortOption] || null,
   });
 
@@ -50,25 +71,29 @@ const TaskList = () => {
   };
 
   const getTableTitle = () => {
-    switch (status) {
-      case "active":
-        return "Активные задачи";
-      case "completed":
-        return "Завершенные задачи";
-      default:
-        return "Все задачи";
-    }
+    if (filter === 'overdue') return "Просроченные задачи";
+    if (filter === 'urgent') return "Срочные задачи (менее 3 дней)";
+    if (filter === 'active') return "Активные задачи";
+    if (filter === 'completed') return "Завершенные задачи";
+    return "Все задачи";
   };
 
   return (
     <div>
       <Container>
+        <div className={taskStyles.searchContainer}>
+          <input
+            type="text"
+            placeholder="Поиск по названию задачи..."
+            value={searchQuery}
+            onChange={handleSearch}
+            className={taskStyles.searchInput}
+          />
+        </div>
         <TaskControls
           allTags={allTags}
           selectedTags={selectedTags}
           onTagToggle={toggleTag}
-          status={status}
-          onStatusChange={setStatus}
           sortOption={sortOption}
           onSortChange={setSortOption}
         />
@@ -76,14 +101,11 @@ const TaskList = () => {
 
       <Container>
         <TaskTable
-            tasks={filteredSortedTasks}
-            expandedTasks={expandedTasks}
-            toggleDetails={toggleDetails}
-            tableTitle={getTableTitle()}
+          tasks={filteredSortedTasks}
+          expandedTasks={expandedTasks}
+          toggleDetails={toggleDetails}
+          tableTitle={getTableTitle()}
         />
-        <div style={{display: 'flex', justifyContent: 'center'}}>
-          <button onClick={() => setIsModalOpen(true)} className={taskStyles.createButton}>Создать новую задачу</button>
-        </div>
       </Container>
 
       <div style={{marginTop: "50px"}}>
@@ -91,13 +113,6 @@ const TaskList = () => {
           <TaskBadgeLegend/>
         </Container>
       </div>
-
-      {isModalOpen && (
-        <TaskModal
-          onClose={() => setIsModalOpen(false)}
-          onSave={addTask}
-        />
-      )}
     </div>
   );
 };

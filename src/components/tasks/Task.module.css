@@ -97,3 +97,18 @@
 .createButton:hover {
   background-color: #0056b3;
 }
+
+.searchContainer {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.searchInput {
+  width: 100%;
+  max-width: 500px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}

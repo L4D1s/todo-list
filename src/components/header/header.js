@@ -1,15 +1,75 @@
 import headerStyles from './header.module.css';
-import {BaselineCheck} from "../Icons";
-
+import {BaselineCheck, ChevronDownIcon} from "../Icons";
+import { Link, useLocation } from 'react-router-dom';
+import { useTasks } from '../../context/TaskContext';
+import { useState } from 'react';
+import TaskModal from '../tasks/TaskModal';
+import { overdueFilter, urgentFilter } from '../../utils/filters';
 
 const Menu = () => {
+  const { tasks } = useTasks();
+  const location = useLocation();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const activeTasks = tasks.filter(task => !task.isCompleted);
+  const overdueTasks = tasks.filter(overdueFilter);
+  const urgentTasks = tasks.filter(urgentFilter);
+
+  const getActiveClass = (path) => {
+    return location.pathname === path ? headerStyles.button + ' ' + headerStyles.active : headerStyles.button;
+  };
+
+  const isActivePath = (path) => {
+    return location.pathname.startsWith(path);
+  };
+
   return (
       <nav className={headerStyles.nav}>
-          <button className={headerStyles.button}>Главная</button>
-          <button className={headerStyles.button}>Мои задачи</button>
-          <button className={headerStyles.button}>Сегодня</button>
-          <button className={headerStyles.button}>Неделя</button>
-          <button className={headerStyles.button}>Важное</button>
+          <Link to="/" className={getActiveClass('/')}>
+            Все задачи ({tasks.length})
+          </Link>
+          <div className={headerStyles.dropdown}>
+            <button 
+              className={`${headerStyles.button} ${isActivePath('/active') ? headerStyles.active : ''}`}
+            >
+              Активные задачи ({activeTasks.length})
+              <ChevronDownIcon className={headerStyles.arrow} />
+            </button>
+            <div className={headerStyles.dropdownContent}>
+              <Link 
+                to="/active" 
+                className={getActiveClass('/active')}
+              >
+                Все задачи ({activeTasks.length})
+              </Link>
+              <Link 
+                to="/active/urgent" 
+                className={getActiveClass('/active/urgent')}
+              >
+                Срочные ({urgentTasks.length})
+              </Link>
+              <Link 
+                to="/active/overdue" 
+                className={getActiveClass('/active/overdue')}
+              >
+                Просроченные ({overdueTasks.length})
+              </Link>
+            </div>
+          </div>
+          <Link to="/completed" className={getActiveClass('/completed')}>
+            Завершенные задачи
+          </Link>
+          <button 
+            className={headerStyles.button}
+            onClick={() => setIsModalOpen(true)}
+          >
+            Добавить задачу
+          </button>
+          {isModalOpen && (
+            <TaskModal
+              onClose={() => setIsModalOpen(false)}
+            />
+          )}
       </nav>
   );
 };
@@ -25,5 +85,4 @@ const Header = () => {
   );
 };
 
-
-export {Header, Menu};
+export {Header};

@@ -29,15 +29,6 @@ const TaskControls = ({
       {isExpanded && (
         <div className={styles.controlsBody}>
           <div className={styles.controlSection}>
-            <label className={styles.label}>Статус задач:</label>
-            <select value={status} onChange={e => onStatusChange(e.target.value)} className={styles.select}>
-              <option value="all">Все</option>
-              <option value="active">Активные</option>
-              <option value="completed">Завершенные</option>
-            </select>
-          </div>
-
-          <div className={styles.controlSection}>
             <label className={styles.label}>Сортировать по:</label>
             <select value={sortOption} onChange={e => onSortChange(e.target.value)} className={styles.select}>
               <option value="">Без сортировки</option>

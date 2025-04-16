@@ -5,7 +5,7 @@ import { useTasks } from '../../context/TaskContext';
 
 const Task = ({ task, isExpanded, toggleDetails }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const { updateTask, completeTask } = useTasks();
+  const { completeTask } = useTasks();
 
   const currentDate = new Date();
   const timeDiff = task.deadline - currentDate;
@@ -31,9 +31,15 @@ const Task = ({ task, isExpanded, toggleDetails }) => {
     };
   }
 
-  const handleSave = (updatedTask) => {
-    updateTask(updatedTask);
-    setIsEditing(false);
+  const formatDate = (date) => {
+    return date.toLocaleString('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
   };
 
   const handleCloseTask = () => {
@@ -44,8 +50,8 @@ const Task = ({ task, isExpanded, toggleDetails }) => {
     <>
       <tr>
         <td onClick={() => toggleDetails(task.id)} style={{ cursor: "pointer" }}>{task.description}</td>
-        <td onClick={() => toggleDetails(task.id)} style={{ cursor: "pointer" }}>{task.createdAt.toLocaleString()}</td>
-        <td onClick={() => toggleDetails(task.id)} style={{...rowStyle, cursor: "pointer" }}>{task.deadline.toLocaleString()}</td>
+        <td onClick={() => toggleDetails(task.id)} style={{ cursor: "pointer" }}>{formatDate(task.createdAt)}</td>
+        <td onClick={() => toggleDetails(task.id)} style={{...rowStyle, cursor: "pointer" }}>{formatDate(task.deadline)}</td>
         <td onClick={() => toggleDetails(task.id)} style={{ cursor: "pointer" }}>{task.participants.join(", ")}</td>
         <td onClick={() => toggleDetails(task.id)} style={{ cursor: "pointer" }}>{task.tags.join(", ")}</td>
         <td onClick={() => toggleDetails(task.id)} style={{ cursor: "pointer" }}>{task.isCompleted ? "Завершено" : "Не завершено"}</td>
@@ -61,7 +67,6 @@ const Task = ({ task, isExpanded, toggleDetails }) => {
         <TaskModal
           task={task}
           onClose={() => setIsEditing(false)}
-          onSave={handleSave}
         />
       )}
 

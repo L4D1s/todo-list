@@ -1,21 +1,17 @@
 import {Header} from "./components/header/header";
 import Footer from "./components/footer/footer";
-import TaskList from "./components/tasks/TaskList";
+import { Outlet } from 'react-router-dom';
 import './index.css';
-import { TaskProvider } from './context/TaskContext';
-
 
 function App() {
   return (
-      <TaskProvider>
-          <div id="root" className="App">
-              <Header />
-              <main className="content">
-                  <TaskList/>
-              </main>
-              <Footer />
-          </div>
-      </TaskProvider>
+    <div className="app-root">
+      <Header />
+      <main className="content">
+        <Outlet />
+      </main>
+      <Footer />
+    </div>
   );
 }
 
