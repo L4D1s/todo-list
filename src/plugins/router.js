@@ -1,22 +1,20 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createHashRouter } from 'react-router-dom';
 import App from '../App';
 import TaskList from '../components/tasks/TaskList';
-import { searchFilter } from '../utils/filters';
+import { store } from '../store/store';
+import { addTask, updateTask } from '../store/slices/tasksSlice';
 
-const createSearchLoader = (tasks) => {
+const createSearchLoader = () => {
   return ({ request }) => {
     const url = new URL(request.url);
     const searchQuery = url.searchParams.get('search') || '';
-    console.log(searchQuery)
-    return {
-      searchQuery,
-      filteredTasks: tasks.filter(searchFilter(searchQuery))
-    };
+    return { searchQuery };
   };
 };
 
-const createRouter = (addTask, updateTask, tasks) => {
+const createRouter = () => {
   const taskAction = async ({ request }) => {
+    const tasks = store.getState().tasks.tasks;
     const formData = await request.formData();
     const taskData = Object.fromEntries(formData);
     
@@ -30,7 +28,7 @@ const createRouter = (addTask, updateTask, tasks) => {
         tags: taskData.tags.split(',').map(t => t.trim()),
         isCompleted: false
       };
-      addTask(newTask);
+      store.dispatch(addTask(newTask));
     } else if (request.method === 'PUT') {
       const existingTask = tasks.find(t => t.id === parseInt(taskData.id));
       const updatedTask = {
@@ -42,15 +40,13 @@ const createRouter = (addTask, updateTask, tasks) => {
         tags: taskData.tags.split(',').map(t => t.trim()),
         isCompleted: taskData.isCompleted === 'true'
       };
-      updateTask(updatedTask);
+      store.dispatch(updateTask(updatedTask));
     }
     
     return null;
   };
 
-  const searchLoader = createSearchLoader(tasks);
-
-  return createBrowserRouter([
+  return createHashRouter([
     {
       path: '/',
       element: <App />,
@@ -58,7 +54,7 @@ const createRouter = (addTask, updateTask, tasks) => {
         {
           path: '/',
           element: <TaskList filter="all" />,
-          loader: searchLoader
+          loader: createSearchLoader()
         },
         {
           path: '/active',
@@ -66,24 +62,24 @@ const createRouter = (addTask, updateTask, tasks) => {
             {
               path: '',
               element: <TaskList filter="active" />,
-              loader: searchLoader
+              loader: createSearchLoader()
             },
             {
               path: 'urgent',
               element: <TaskList filter="urgent" />,
-              loader: searchLoader
+              loader: createSearchLoader()
             },
             {
               path: 'overdue',
               element: <TaskList filter="overdue" />,
-              loader: searchLoader
+              loader: createSearchLoader()
             }
           ]
         },
         {
           path: '/completed',
           element: <TaskList filter="completed" />,
-          loader: searchLoader
+          loader: createSearchLoader()
         },
         {
           path: 'tasks',

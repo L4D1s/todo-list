@@ -4,22 +4,22 @@ import TaskControls from "./TaskControls";
 import TaskTable from "./TaskTable";
 import TaskBadgeLegend from "./TaskBadgeLegend";
 import useFilterSort from "../../hooks/useFilterSort";
-import { tagFilter, statusFilter, overdueFilter, urgentFilter } from "../../utils/filters";
+import { tagFilter, statusFilter, overdueFilter, urgentFilter, searchFilter } from "../../utils/filters";
 import {
   sortByCreatedDateAsc,
   sortByDeadlineAsc,
   sortByParticipantsCount
 } from "../../utils/sorters";
-import { useTasks } from '../../context/TaskContext';
 import taskStyles from './Task.module.css';
 import { useLocation, useNavigate, useLoaderData } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const TaskList = ({ filter }) => {
   const [selectedTags, setSelectedTags] = useState([]);
   const [sortOption, setSortOption] = useState('');
   const [expandedTasks, setExpandedTasks] = useState([]);
-  const { searchQuery, filteredTasks } = useLoaderData();
-  const { tasks } = useTasks();
+  const { searchQuery } = useLoaderData();
+  const tasks = useSelector(state => state.tasks.tasks);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -43,7 +43,7 @@ const TaskList = ({ filter }) => {
   };
 
   const getFilters = () => {
-    const filters = [tagFilter(selectedTags)];
+    const filters = [tagFilter(selectedTags), searchFilter(searchQuery)];
     
     if (filter === 'overdue') {
       filters.push(overdueFilter);
@@ -59,7 +59,7 @@ const TaskList = ({ filter }) => {
   };
 
   const filteredSortedTasks = useFilterSort({
-    data: filteredTasks,
+    data: tasks,
     filters: getFilters(),
     sortFn: sortMap[sortOption] || null,
   });

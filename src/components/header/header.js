@@ -1,13 +1,13 @@
 import headerStyles from './header.module.css';
 import {BaselineCheck, ChevronDownIcon} from "../Icons";
 import { Link, useLocation } from 'react-router-dom';
-import { useTasks } from '../../context/TaskContext';
 import { useState } from 'react';
 import TaskModal from '../tasks/TaskModal';
 import { overdueFilter, urgentFilter } from '../../utils/filters';
+import { useSelector } from 'react-redux';
 
 const Menu = () => {
-  const { tasks } = useTasks();
+  const tasks = useSelector(state => state.tasks.tasks);
   const location = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   

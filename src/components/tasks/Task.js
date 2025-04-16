@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import TaskModal from "./TaskModal";
 import styles from './Task.module.css'
-import { useTasks } from '../../context/TaskContext';
+import { useDispatch } from 'react-redux';
+import { completeTask } from '../../store/slices/tasksSlice';
 
 const Task = ({ task, isExpanded, toggleDetails }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const { completeTask } = useTasks();
+  const dispatch = useDispatch();
 
   const currentDate = new Date();
   const timeDiff = task.deadline - currentDate;
@@ -43,7 +44,7 @@ const Task = ({ task, isExpanded, toggleDetails }) => {
   };
 
   const handleCloseTask = () => {
-    completeTask(task.id);
+    dispatch(completeTask(task.id));
   };
 
   return (
